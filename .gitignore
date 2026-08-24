@@ -203,3 +203,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+!/app/service/article_service.py

@@ -1,8 +1,12 @@
 from typing import Any
 
 import httpx
+from injectq import singleton
+
 from app.source.media_source import MediaSource
 
+
+@singleton
 class MediaRestSource(MediaSource):
     def __init__(self, url: str) -> None:
         self.url = url

@@ -1,16 +1,19 @@
 import enum
 import uuid
 from datetime import datetime
-from sqlmodel import SQLModel, Field, Relationship
+
 from sqlalchemy import Column, ForeignKey, TIMESTAMP, text
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlmodel import SQLModel, Field, Relationship
 
 from app.domain.media_content import MediaContent
+
 
 class MediaSourceType(str, enum.Enum):
     FILE = "FILE"
     REST = "REST"
+
 
 class ArticleState(str, enum.Enum):
     NEW = "NEW"
@@ -19,27 +22,18 @@ class ArticleState(str, enum.Enum):
     RETRIED = "RETRIED"
     FAILED = "FAILED"
 
+
 class Article(SQLModel, table=True):
     __tablename__ = "article"
 
-    id: uuid.UUID = Field(
+    id: uuid.UUID | None = Field(
         default_factory=uuid.uuid4,
-        sa_column=Column(PG_UUID(as_uuid=True), primary_key=True),
-    )
-
-    source_type: MediaSourceType = Field(
         sa_column=Column(
-            SAEnum(
-                MediaSourceType,
-                name="media_source_type",
-                create_type=False,  # prevents SQLAlchemy from auto-creating the type on create_all()
-            ),
-            nullable=False,
-            server_default=text("'REST'") # database-level default, not Python-side
-        )
+            PG_UUID(as_uuid=True),
+            primary_key=True),
     )
 
-    status: ArticleState = Field(
+    article_state: ArticleState = Field(
         sa_column=Column(
             SAEnum(
                 ArticleState,
@@ -51,10 +45,15 @@ class Article(SQLModel, table=True):
         )
     )
 
-    created_at: datetime = Field(
-        sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    created_at: datetime | None = Field(
+        sa_column=Column(
+            TIMESTAMP(timezone=True),
+            nullable=False,
+            server_default=text("now()")
+        )
     )
-    media_content_id: uuid.UUID = Field(
+
+    media_content_id: uuid.UUID | None = Field(
         sa_column=Column(
             PG_UUID(as_uuid=True),
             ForeignKey("media_content.id", ondelete="CASCADE"),
@@ -65,5 +64,5 @@ class Article(SQLModel, table=True):
 
     media_content: "MediaContent" = Relationship(
         back_populates="article",
-        sa_relationship_kwargs={"use-list": False},
+        sa_relationship_kwargs={"uselist": False},
     )

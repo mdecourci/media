@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
-from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
 import logging
+from abc import ABC, abstractmethod
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +29,7 @@ class MediaSource(ABC):
         """Subclasses implement the actual source-specific retrieval here."""
         raise NotImplementedError
 
+    # @abstractmethod
     async def _cleanup(self) -> None:
         """Default no-op. Override if the source holds a resource that needs releasing."""
         return None

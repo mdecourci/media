@@ -1,0 +1,32 @@
+{
+	"status": "ok",
+	"totalResults": 2,
+	"articles": [
+		{
+			"source": {
+				"id": null,
+				"name": "CNBC"
+			},
+			"author": "Hillary Jackson",
+			"title": "Equal-weight S&P 500 is leading the 2026 market and its flagship trade just hit $100 billion",
+			"description": "Money is flooding into equal-weight stock market ETFs this year. Investing experts say it's not a fad.",
+			"url": "https://www.cnbc.com/2026/08/23/stocks-market-investing-sp500-spx.html",
+			"urlToImage": "https://image.cnbcfm.com/api/v1/image/108292448-1776346447331-108292448-1776344779099-SP_7000-OB-Photo-CC-20260415-PRESS-08.JPG?v=1776373312&w=1920&h=1080",
+			"publishedAt": "2026-08-23T13:00:01Z",
+			"content": "Traders celebrating at the New York Stock Exchange on April 15, 2026, as the S&amp;P 500 closed above the 7,000 level for the first time.\r\nEqual-weight ETFs are having a moment. The investing approac… [+5697 chars]"
+		},
+		{
+			"source": {
+				"id": null,
+				"name": "Biztoc.com"
+			},
+			"author": "teslarati.com",
+			"title": "Tesla will launch Cybercab on September 3",
+			"description": "Tesla Cybercab is set to launch in Austin, Texas, on September 3, as the company has officially started sending out invitations to a dedicated event it will hold in the city where its headquarters is located.\nThe Cybercab is Tesla’s dedicated ride-sharing veh…",
+			"url": "https://biztoc.com/x/5e9bf568a106a185",
+			"urlToImage": "https://biztoc.com/cdn/5e9bf568a106a185_s.webp",
+			"publishedAt": "2026-08-23T08:22:47Z",
+			"content": "Tesla Cybercab is set to launch in Austin, Texas, on September 3, as the company has officially started sending out invitations to a dedicated event it will hold in the city where its headquarters is… [+150 chars]"
+		}
+	]
+}
