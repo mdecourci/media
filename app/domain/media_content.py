@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime
+
 from sqlalchemy import Column, TIMESTAMP, Text, text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlmodel import SQLModel, Field, Relationship
+
 
 class MediaContent(SQLModel, table=True):
     __tablename__ = "media_content"

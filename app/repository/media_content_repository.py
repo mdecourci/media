@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
+
 @singleton
 class MediaContentRepository(Repository[MediaContent]):
     """Generic CRUD repository — works for any SQLModel table."""
