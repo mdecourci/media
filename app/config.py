@@ -6,14 +6,18 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pathlib import Path
+ENV_FILE = Path(__file__).resolve().parent.parent / ".env"  # adjust based on config.py's actual location
+
+print(ENV_FILE.exists())
 
 class DatabaseSettings(BaseSettings):
     # Define fields with type hints. Pydantic validates these at runtime.
-    db_user: str = Field(default="postgres", alias="POSTGRES_USER")
-    db_password: str = Field(default="mypassword", alias="POSTGRES_PASSWORD")
-    db_host: str = Field(default="localhost", alias="POSTGRES_HOST")
-    db_port: int = Field(default=5432, alias="POSTGRES_PORT")
-    db_name: str = Field(default="local_vector_db", alias="POSTGRES_DB")
+    database_user: str = Field(validation_alias="POSTGRES_USER")
+    database_password: str = Field(validation_alias="POSTGRES_PASSWORD")
+    database_host: str = Field(validation_alias="POSTGRES_HOST")
+    database_port: int = Field(validation_alias="POSTGRES_PORT")
+    database_db: str = Field(validation_alias="POSTGRES_DB")
 
     # Pydantic Settings configuration block
     model_config = SettingsConfigDict(
@@ -22,19 +26,18 @@ class DatabaseSettings(BaseSettings):
         env_file_encoding="utf-8",
         # Extra fields in the env file that aren't defined above will be ignored safely
         extra="ignore",
-        populate_by_name=True,
     )
 
     # config.py
     @property
     def connection_string(self) -> str:
         """Dynamically builds the Asyncpg driver connection string for LangChain."""
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        return f"postgresql+asyncpg://{self.database_user}:{self.database_password}@{self.database_host}:{self.database_port}/{self.database_db}"
 
 
 class MediaSourceSettings(BaseSettings):
     # Define fields with type hints. Pydantic validates these at runtime.
-    source: str = Field(default="postgres", alias="MEDIA_SOURCE")
+    media_source: str = Field(validation_alias="MEDIA_SOURCE")
 
     # Pydantic Settings configuration block
     model_config = SettingsConfigDict(
@@ -48,7 +51,7 @@ class MediaSourceSettings(BaseSettings):
 
     @property
     def file(self) -> Path:
-        return Path(self.source)
+        return Path(self.media_source)
 
 
 def configure_logging() -> None:
