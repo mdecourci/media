@@ -18,19 +18,19 @@ container[type(engine)] = engine
 
 def create_session() -> AsyncSession:
     """Async factory — a new session per resolution."""
+    print("create_session")
     return session_maker()
 
-
-container.bind_factory(AsyncSession, create_session)
-print("Container has  AsyncSession")
-container = InjectQ.get_instance()
-
-
 def create_media_file_source() -> MediaFileSource:
-    return MediaFileSource(folder_path=mediaSourceSettings.file)
+    print("Creating MediaFileSource")
+    return MediaFileSource()
 
+session = create_session()
+media_file_source = create_media_file_source()
 
-container.bind_factory(MediaFileSource, create_media_file_source)
-container.bind(MediaSource, MediaFileSource)
-
+container[type(session)] = session
+print("Container has AsyncSession")
+container[type(media_file_source)] = media_file_source
 print("Container has  MediaFileSource")
+
+container.bind(MediaSource, MediaFileSource)
