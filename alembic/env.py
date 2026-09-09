@@ -1,5 +1,9 @@
-import asyncio
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+from __future__ import annotations
+
 from logging.config import fileConfig
+import asyncio
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -7,19 +11,26 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 
 from app.config import databaseSettings
-from app.domain.article import Article, ArticleState
-from app.domain.article import MediaContent
+from app.persistence.model.entity_base import Base
+from app.persistence.model.entity_base import EntityBase
+from app.persistence.model.article import Article
+from app.persistence.model.media_content import MediaContent
+from app.persistence.model.workflow_context import WorkflowContext
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", str(databaseSettings.database_url))
+config.set_main_option(
+    "sqlalchemy.url",
+    str(databaseSettings.database_url)
+)
+
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = SQLModel.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -64,7 +75,7 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
-
+    print(config.config_ini_section)
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

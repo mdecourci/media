@@ -5,7 +5,6 @@ from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import URL
 
 _base_config = SettingsConfigDict(env_file=".env", env_ignore_empty=True, extra="ignore", validate_default=False)
 
@@ -29,14 +28,14 @@ class DatabaseSettings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Dynamically builds the Asyncpg driver connection string for LangChain."""
-        return URL.create(
-            drivername="postgresql+asyncpg",
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
-            port=self.POSTGRES_PORT,
-            database=self.POSTGRES_DB,
-        )
+        print(self.POSTGRES_SERVER)
+        print(self.POSTGRES_PORT)
+        print(self.POSTGRES_USER)
+        print(self.POSTGRES_PASSWORD)
+        print(self.POSTGRES_DB)
+        url = f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        print(f"Database URL: {url}")
+        return url
 
 
 class MediaSourceSettings(BaseSettings):
@@ -49,23 +48,6 @@ class MediaSourceSettings(BaseSettings):
     @property
     def file(self) -> Path:
         return Path(self.MEDIA_SOURCE)
-
-
-def configure_logging() -> None:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format=("%(asctime)s | " "%(levelname)s | " "%(name)s | " "%(message)s"),
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-        ],
-        force=True,
-    )
-
-    logging.getLogger("uvicorn").setLevel(logging.DEBUG)
-
-    logging.getLogger("injectq").setLevel(logging.DEBUG)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
-
 
 # Instantiate a single global instance for application-wide imports
 databaseSettings = DatabaseSettings()
