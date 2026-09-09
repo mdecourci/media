@@ -1,16 +1,16 @@
 import logging
 import uuid
-from abc import abstractmethod
 from contextlib import asynccontextmanager
 from typing import Generic, TypeVar, Type, Sequence, Any, AsyncIterator
 
+from sqlalchemy import select, Result
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import SQLModel, select
+
+from app.persistence.model.entity_base import Base
 
 logger = logging.getLogger(__name__)
 
-ModelType = TypeVar("ModelType", bound=SQLModel)
-
+ModelType = TypeVar("ModelType", bound=Base)
 
 class Repository(Generic[ModelType]):
     """Generic CRUD repository — works for any SQLModel table."""
@@ -22,7 +22,7 @@ class Repository(Generic[ModelType]):
     @asynccontextmanager
     async def transaction(self) -> AsyncIterator[None]:
         """Commits on success, rolls back on failure. Hides session entirely from callers."""
-        logger.debug("Transaction starting")
+        logger.debug("Transaction started")
         try:
             yield
             await self.session.commit()
@@ -52,7 +52,6 @@ class Repository(Generic[ModelType]):
         result = await self.session.execute(select(self.model))
         return result.scalars().all()
 
-    @abstractmethod
     async def find_by(self, **conditions: Any) -> Sequence[ModelType]:
         logger.debug("find_by: {}".format(conditions))
         """
@@ -62,7 +61,9 @@ class Repository(Generic[ModelType]):
         statement = select(self.model)
         for field_name, value in conditions.items():
             column = getattr(self.model, field_name)
-            statement = statement.where(column == value)
+            statement = statement.where(
+                column == value
+            )
 
         result = await self.session.execute(statement)
         return result.scalars().all()
@@ -70,16 +71,17 @@ class Repository(Generic[ModelType]):
     async def find_one_by(self, **conditions: Any) -> ModelType | None:
         logger.debug("find_one_by: {}".format(conditions))
         results = await self.find_by(**conditions)
-
-    async def find_where(self, **filters: Any) -> Sequence[ModelType]:
-        """Generic equality filter — every field/value pair is AND-ed together."""
-        statement = select(self.model)
-        for field_name, value in filters.items():
-            column = getattr(self.model, field_name)
-            statement = statement.where(column == value)
-
-        result = await self.session.execute(statement)
-        return result.scalars().all()
+        return results[0] if results else None
+    #
+    # async def find_where(self, **conditions: Any) -> Sequence[ModelType]:
+    #     """Generic equality filter — every field/value pair is AND-ed together."""
+    #     statement = select(self.model)
+    #     for field_name, value in conditions.items():
+    #         column = getattr(self.model, field_name)
+    #         statement = statement.where(column == value)
+    #
+    #     result = await self.session.execute(statement)
+    #     return result.scalars().all()
 
     async def delete(self, item: ModelType) -> None:
         logger.debug("delete: {}".format(item))

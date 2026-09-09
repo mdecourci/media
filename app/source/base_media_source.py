@@ -5,7 +5,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class MediaSource(ABC):
+class BaseMediaSource(ABC):
     """MediaSource base class for all data sources. Services depend on this,
     never on concrete subclasses."""
 
@@ -16,6 +16,7 @@ class MediaSource(ABC):
         Error handling and cleanup are hidden here, uniform across every source type.
         """
         try:
+            logger.debug("Fetching data...")
             data = await self._fetch_data()
             return data
         except Exception:

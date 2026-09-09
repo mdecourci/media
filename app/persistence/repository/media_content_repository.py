@@ -5,8 +5,8 @@ from injectq import singleton
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel
 
-from app.domain.media_content import MediaContent
-from app.repository.repository import Repository
+from app.persistence.model.media_content import MediaContent
+from app.persistence.repository.repository import Repository
 
 logger = logging.getLogger(__name__)
 

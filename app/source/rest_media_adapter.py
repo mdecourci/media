@@ -3,11 +3,11 @@ from typing import Any
 import httpx
 from injectq import singleton
 
-from app.source.media_source import MediaSource
+from app.source.base_media_source import BaseMediaSource
 
 
 @singleton
-class MediaRestSource(MediaSource):
+class RestMediaAdapter(BaseMediaSource):
     def __init__(self, url: str) -> None:
         self.url = url
         self._client: httpx.AsyncClient | None = None
