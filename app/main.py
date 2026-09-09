@@ -1,16 +1,20 @@
 # main.py
+
 import asyncio
 
 # Import the container configuration first so that all
 # dependency bindings are registered.
 from app.container import container
-from app.service.article_service import ArticleService
-from app.source.media_file_source import MediaFileSource
+from app.logging_config import configure_logging
+from app.persistence.model.entity_base import Base
+from app.workflow.workflow_runner import WorkFlowRunner
+
 
 async def main() -> None:
-    article_service = container[ArticleService]
-
-    await article_service.find_articles()
+    configure_logging()
+    work_flow_runner = container[WorkFlowRunner]
+    print(Base.metadata.tables.keys())
+    await work_flow_runner.run()
 
 
 if __name__ == "__main__":

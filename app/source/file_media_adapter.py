@@ -1,13 +1,11 @@
-from pathlib import Path
-
 from injectq import singleton
 
 from app.config import mediaSourceSettings
-from app.source.media_source import MediaSource
+from app.source.base_media_source import BaseMediaSource
 
 
 @singleton
-class MediaFileSource(MediaSource):
+class FileMediaAdapter(BaseMediaSource):
     def __init__(self) -> None:
         self.folder_path = mediaSourceSettings.file
 

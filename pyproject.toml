@@ -1,14 +1,57 @@
+[build-system]
+requires = ["setuptools>=80.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "media"
+name = "media-service"
 version = "0.1.0"
-description = "Add your description here"
+description = "Media ingestion and metadata persistence service"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
+
 dependencies = [
-    "black>=25.1.0",
-    "isort>=6.0.1",
-    "langchain>=0.3.27",
-    "langchain-ollama>=0.3.6",
-    "langchain-openai>=0.3.30",
-    "python-dotenv>=1.1.1",
+    "alembic==1.19.1",
+    "annotated-types==0.8.0",
+    "anyio==4.14.2",
+    "asyncpg==0.31.0",
+    "greenlet==3.5.5",
+    "httpx==0.28.1",
+    "injectq==0.4.2",
+    "psycopg==3.3.4",
+    "psycopg-binary==3.3.4",
+    "pydantic==2.13.4",
+    "pydantic-settings==2.15.0",
+    "python-dotenv==1.2.3",
+    "requests==2.34.2",
+    "SQLAlchemy==2.0.52",
+    "sqlmodel==0.0.39",
+    "typing_extensions==4.16.0",
+    "tzdata==2026.3",
 ]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.alembic]
+script_location = "alembic"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
