@@ -145,7 +145,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+*-old/
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -203,4 +203,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
+alembic*/
