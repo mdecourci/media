@@ -31,7 +31,7 @@ class DatabaseSettings(BaseSettings):
         print(self.POSTGRES_SERVER)
         print(self.POSTGRES_PORT)
         print(self.POSTGRES_USER)
-        print(self.POSTGRES_PASSWORD)
+        # print(self.POSTGRES_PASSWORD)
         print(self.POSTGRES_DB)
         url = f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         print(f"Database URL: {url}")
@@ -50,5 +50,5 @@ class MediaSourceSettings(BaseSettings):
         return Path(self.MEDIA_SOURCE)
 
 # Instantiate a single global instance for application-wide imports
-databaseSettings = DatabaseSettings()
-mediaSourceSettings = MediaSourceSettings()
+mediaSourceSettings = MediaSourceSettings()  # type: ignore[call-arg]
+databaseSettings = DatabaseSettings()  # type: ignore[call-arg,call-arg]
