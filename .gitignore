@@ -144,6 +144,7 @@ celerybeat.pid
 env/
 venv/
 ENV/
+#./media_fetch_worker
 env.bak/
 venv.bak/
 *-old/
