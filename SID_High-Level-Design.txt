@@ -1,0 +1,241 @@
+STRATEGIC INTELLIGENCE DASHBOARD (SID) - HIGH-LEVEL DESIGN
+
+2. INTRODUCTION
+
+The Strategic Intelligence Dashboard (SID) is being developed to enhance NESO's ability to monitor, evaluate, and act on stakeholder and sectoral insights. It will provide a unified, real-time view of key metrics, interactions, and sentiment across stakeholders and industry segments, supporting data-driven decision-making and targeted engagement strategies.
+
+This document defines the functional characteristics of the SID based on the agreed business requirements and serves as a guide for the development team to progress into detailed design. It outlines what needs to be delivered to meet both functional and non-functional requirements and provides an early view in terms of technical approach, architecture, and integration patterns.
+
+This document represents the High-Level Design (HLD) for SID. It defines the target architecture, integration patterns, and overarching security principles. Component-level configuration such as RBAC assignments, service principal details, and network rules will be defined in subsequent Detailed Design artefacts and are intentionally out of scope for the HLD.
+
+
+3. SCOPE
+
+Link to requirements is here on ADO.
+
+The business seeks to enhance its stakeholder engagement and sectoral insight capabilities. The primary objective is to develop a comprehensive dashboard that provides a unified view of key metrics, interactions, and insights across two main dimensions: Stakeholders (e.g., Scottish Power Networks, SSE Networks, National Grid, etc.) and Segments/Industries (e.g., Sea Communities, Visual Impact Groups, Business Entities).
+
+The demand stems from the need to:
+- Monitor and evaluate stakeholder and sector performance using BI and CSAT scores.
+- Track and invoke AI-generated responses from Ada (through pre-curated queries).
+- Maintain visibility into key relationships, meeting participants, and working group activities.
+- Ensure traceability and transparency by linking dashboard elements to their source data.
+
+This initiative aims to support strategic decision-making, improve stakeholder communication, and foster data-driven engagement strategies.
+
+
+4. ASSUMPTIONS AND PREREQUISITES
+
+This initiative aims to support strategic decision-making, improve stakeholder communication, and foster data-driven engagement strategies.
+
+The following assumptions underpin the design and must be communicated to all stakeholders and delivery teams to ensure shared understanding and alignment.
+
+- Business Requirements Baseline - Functional and non-functional requirements have been validated, approved and updated on ADO.
+- Integration Pattern (Updated) - Salesforce and Power BI will connect directly using the Power BI Salesforce connector. A dedicated technical service account will be used for this connector and have limited access to defined Salesforce objects.
+- Data Access Governance - Access through the technical user will be managed centrally under least-privilege principles, restricted to pre-approved objects (e.g., Key Events, Working Groups).
+- RBAC Scope - SID follows NESO-wide identity and access governance. Low-level RBAC assignments and service principal lifecycle management are handled through platform standards and will be documented in Detailed Designs.
+- Source System Stability - Salesforce data structures will remain stable for the duration of the SID development, and this includes both Salesforce and CSAT.
+- Trust Score - Trust Score has been acknowledged as the formal replacement of CSAT score going forward, but communication about this change is anticipated in Q1-2026; no change to design is expected between now and then.
+- Responsible AI Oversight - A human-in-the-loop review process will remain a mandatory control prior to publishing AI-generated or sentiment-derived insights.
+- Allow-listed Media Sources - All external content for sentiment analysis originates from a curated, legally approved allow-list of domains and APIs.
+- Operational Support Readiness - Project team will own day-to-day monitoring, alert response, and environment health post-handover.
+- Licensing & Costs - Required enterprise licenses (Salesforce CRM, Power BI Premium, Azure AAE/LLM runtime) are already budgeted and available within the project's cost model.
+- Entra ID / MFA Enforcement - All users will authenticate through Entra ID with MFA enforced. The only exception is Power BI and the Salesforce connector, which follows a technical user approach for integration, although this technical user is tightly controlled within Salesforce in terms of data access.
+
+
+6. HIGH LEVEL DESIGN
+
+The Strategic Intelligence Dashboard (SID) is designed to centralise key metrics and insights related to stakeholder and industry engagement. Data is ingested primarily from Salesforce and augmented with web-scraped sentiment data. Preset queries and responses through Ada are also shown. The dashboard is built in Power BI and connects to Power BI - Salesforce connector.
+
+Key Features:
+- Automated ingestion of structured data (e.g., stakeholder events, BI/CSAT scores).
+- AI-assisted sentiment intelligence from trusted media sources. Human review and approval process before display.
+- Dashboard organised by stakeholder and segment views.
+
+
+7. ARCHITECTURAL OVERVIEW
+
+The Strategic Intelligence Dashboard (SID) is an end-to-end analytics solution that ingests stakeholder and media data, applies AI-assisted sentiment enrichment, and surfaces governed insights in Power BI. It sits within the NESO Azure tenancy and follows the SDA-approved integration pattern using Power BI-Salesforce.
+
+Components
+- Source Systems: Salesforce CRM (stakeholder events, BI, working groups), CSAT, trusted media sources queried by AI agents.
+- Integration Layer: Power BI - Salesforce connector to absorb data from Salesforce, direct CSAT data load, and direct connections to the AI AAEs.
+- AI & Enrichment: AAEs provide responses to preset queries; media-scouting agents run on a schedule, write to a store for human review and approval prior to dashboard consumption.
+- Application Services: Azure App Service endpoints for Ada and media pipelines.
+- Security: Authentication via Microsoft Entra ID for Power BI. OAuth using technical user for Power BI - Salesforce connector.
+- Analytics & Presentation: Power BI dashboards segmented by stakeholder and sector.
+
+Processing Cadence
+- Salesforce: Power BI fetches data from Salesforce using the Power BI - Salesforce connector on a daily basis (user also has an option to refresh).
+- Media Sentiment: AI agents execute approximately 2-3 times a day (between 6 am and 6 pm).
+- CSAT: Once every 6 months.
+
+Development Lifecycle, QA & Environments
+- Environments: Dev, System Test (ST), SIT, Pre-Prod and Prod, with gated promotions.
+- Quality Assurance strategy is in place. For more details refer to the QA document.
+- Release Approach: Power BI content is manually published to various workspaces while AI-related code is deployed via CI/CD pipelines.
+
+Observations & Operations
+- Monitoring & telemetry: End-to-end health for Azure services, data pipelines, and Power BI refreshes.
+- Responsible AI Controls: Human-in-the-loop review queue, approval status tracking, and immutable audit logs for AI outputs.
+- Audit & compliance: Centralised log retention.
+- Reviewer UI: Work queue (new/flagged), side-by-side "source vs. AI output," confidence scores, and "Approve/Reject/Needs-changes."
+
+Database Layer
+- Raw Store: Immutable drops of fetched articles/posts with date, source URL, and text.
+- Normalised Store: Clean, summarised text, canonical fields (title, body).
+- Enriched Store: Entities (stakeholder, segment), sentiment (score/label), confidence.
+- Review Store: Review status, reviewer details, decision time, rationale.
+
+Licensed Components
+- App Runtime: Azure App Service or Functions (Timer + HTTP triggers).
+- Monitoring: Azure or Application Insights/Log Analytics.
+- Valid subscription for accessing gated content.
+
+Error Handling & Resilience
+- Zscaler: any websites blocked by Zscaler need to be logged.
+
+
+8. SOLUTION COMPONENTS
+
+8.1 Salesforce
+Through an existing Power BI - Salesforce connector, data such as key events and working groups is extracted from Salesforce.
+
+Once appropriate access has been provided, the objects are visible on Power BI.
+
+8.2 CSAT
+CSAT data (Excel sheet) stored on SharePoint is ingested by Power BI through a manual process. Additional transformations (such as filtering on SSEP team name, excluding anonymous data, and mapping between sector and organisation/stakeholder) are done to make the data available for reporting and to compute satisfaction scores for organisation and sector.
+
+This has been done as a one-off load and future loads might not happen, as Trust Score might replace CSAT. Discussions with the business are work in progress, and the technical design may need updating based on the final decision.
+
+8.3 Media
+Continuously discover, normalise, and enrich media content about named stakeholders/sectors, then route AI-generated sentiment and summaries through a human-in-the-loop approval process before surfacing on the dashboard.
+
+RSS feeds are to be used.
+
+Core Components
+- Scheduler & Workers: Time-based jobs that fan out crawl/search tasks per topic/keyword set.
+- Processing Pipeline: Online search -> deduplication -> entity resolution -> sentiment & summary -> queue for review.
+- Review Workflow: A lightweight web app (or module) to approve/reject AI outputs with rationale, tags, and audit trail.
+- Publish Orchestrator: Promotes only approved insights to analytics storage for Power BI consumption.
+
+User Interfaces & Layers
+- Operational UI: Run status, log/freshness, keyword/topics, and error queues (Ops/Support audience).
+
+8.4 Ada
+This design describes how to expose an existing application that integrates a Large Language Model (LLM) with Azure AI Search as a RESTful API. The API will accept user questions, retrieve relevant context from Azure AI Search, generate a response using the LLM, and return the result. The application will be built using Flask and deployed to Azure App Service for scalability and ease of management.
+
+Azure AI Search
+- Hosts indexed content (e.g., documents, knowledge base, FAQs).
+- Enables semantic or keyword-based search to retrieve relevant context for a given query.
+
+Flask Application
+- Acts as the API layer.
+- Accepts HTTP requests, orchestrates search and generation logic, and returns responses.
+
+Azure App Service
+- Hosts the Flask application.
+- Provides a scalable, managed environment for deploying Python web apps.
+
+Data Flow
+- Client Request: A user sends a question via an HTTP POST request to the Flask API endpoint.
+- Search Invocation: The Flask app uses Azure AI Search to retrieve relevant documents or text snippets based on the question.
+- Prompt Construction: The retrieved content is combined with the user's question to form a prompt.
+- LLM Response Generation: The prompt is sent to Azure OpenAI, which returns a generated answer.
+- API Response: The Flask app returns the answer to the client in JSON format.
+
+
+9. CLOUD & INFRASTRUCTURE
+
+This section presents the high-level architecture broken down into current state (NG) versus future state (NESO).
+
+Current State (Ada and Media on NG)
+NESO employees log on via MS Entra ID and access Power BI, which fetches data daily from Salesforce (key events, start/end dates, working group ID, description, meeting notes, BI score) through the Power BI-Salesforce connector, and loads CSAT data manually. Power BI also sends preset queries via REST API to the Media (AAE) and Ada (AAE) services, which currently sit in the NG Azure tenancy. The Media service reviews AI outputs and approves items before they are stored in a database for dashboard consumption; AI agents scout the web for trusted sources on a schedule (roughly every 2 hours). Ada authenticates via OAuth/Azure AD and returns a JSON response through its own endpoint and Azure App Service.
+
+Future State (when Ada and Media move to NESO)
+The future-state architecture mirrors the current-state flow, but with the Media (AAE) and Ada (AAE) services relocated from the NG Azure tenancy into the NESO Azure tenancy, bringing them fully under NESO's platform and security governance while the rest of the data flow (Power BI, Salesforce connector, CSAT, review/approval process) remains the same.
+
+
+10. INTEGRATION
+
+Sub-sections are defined for each interface within the solution, e.g., protocols used, middleware, and APIs (high level, no low-level detail).
+
+Provider/Source | Consumer/Target | Integration Type                  | Protocol      | Authentication | Frequency
+Salesforce      | Power BI         | Power BI - Salesforce connector   | REST (HTTPS)  | OAuth2          | Daily
+Ada             | Power BI         | API                                | REST (HTTPS)  | OAuth2          | On demand
+Media           | Power BI         | API                                | REST (HTTPS)  | OAuth2          | On demand
+CSAT            | Power BI         | Manual upload                      | -             | -               | 6 monthly
+
+
+11. REPORTING
+
+The following reporting considerations need to be included:
+
+Data Model Design
+- Normalise and relate data across sources (e.g., join Ada's stakeholder-specific insights and media updates with stakeholder and sector info).
+- Use a star schema where possible for performance.
+
+Security & Access Control
+- Dashboard access is governed by Microsoft Entra ID groups mapped to Power BI workspace roles: Admin, Member, Contributor and Viewer. Admin/Member/Contributor roles are restricted to the SID technical/business users; access to SID via the Viewer role only.
+- No direct user access to underlying Azure SQL or AAE stores is permitted; all access is via application identities.
+
+Performance Optimization
+- Use aggregations and pre-calculated measures.
+- Limit visuals and filters on large datasets.
+
+Audit & Logging
+- Track data refresh history and API call logs.
+- Include metadata such as source, timestamp, and approval status.
+
+
+12. NON-FUNCTIONAL SOLUTION DESIGN COMPONENTS
+
+Security (BSR document approved)
+- All authentication and authorization use Microsoft Entra ID (OAuth2 / OpenID Connect) with MFA enabled for both users.
+- The Power BI - Salesforce connector uses a dedicated, least-privilege technical service account approved by Security.
+- Media agents communicate outbound only, over HTTPS/TLS 1.2+, to allow-listed and compliance-approved news sources.
+- Data at Rest: SID uses Azure SQL Database, a fully Microsoft-managed PaaS service. Azure SQL enforces Transparent Data Encryption (TDE) by default, meaning all data files, backups, and transaction logs are encrypted at rest with AES-256. Encryption keys are managed by Microsoft as part of the platform. SID also uses Power BI's internal dataset storage, which is encrypted at rest as part of Microsoft's Power BI service.
+- Data in Motion: All integrations between components (Power BI, Salesforce, Ada API, Media API) use HTTPS/TLS 1.2+ and OAuth/Entra ID where applicable.
+- The Responsible AI controls require human approval before AI-generated content is displayed, maintaining auditability and mitigating reputational or data quality risks.
+- Data on the dashboard will be used by NESO employees only (internal use).
+- For the Power BI - Salesforce connector, the guidance from Security is to rotate the password every 90 days and refresh keys/tokens every 12 months.
+
+Volumetrics
+- Salesforce data size: Scale is in terms of 'thousands' (contact, event, working group records). Statistics below are from the Salesforce prod system as of September 2025.
+- Max Key Events per account is 3392; average Key Events per account is 15.2.
+- Max Working Group per account is 267; average Working Groups per account is 4.4.
+
+Year | Total Key Events | Total Working Groups
+2017 | 59                | 31
+2018 | 349               | 95
+2019 | 519               | 199
+2020 | 1359              | 165
+2021 | 1390              | 153
+2022 | 1065              | 132
+2023 | 1777              | 205
+2024 | 3887              | 306
+2025 | 4943              | 168
+
+- Media data: ~100-200 items per month processed by the AI agent, of which 10-20% are approved for dashboard display.
+- Power BI users: ~40 active users; concurrency peak <=5.
+- Storage: Azure SQL for media records <10 MB per month.
+
+Performance
+- Dashboard needs to be available 24 x 7.
+- Load time <=3 seconds for cached datasets.
+
+Stability
+- Azure App Services configured with health probes and auto-restart on failure.
+
+Scalability
+- With time, more data sources will be added and the dashboard needs to absorb those datasets.
+- AI Agent outputs are expected to get better with human feedback, resulting in a reduced number of articles to be reviewed.
+
+Data Archiving and Retention
+- All data and logs should be held per NESO's retention policy so the support team can fix any technical issues.
+- No deletion of Salesforce source data (managed by Salesforce retention policies).
+
+High Availability & Disaster Recovery
+- Power BI and Salesforce provide service continuity within their respective clouds.
+- Azure App Services (Media AI Agent and Review & Approval App) are deployed in the NESO Azure Tenancy.
+- Application state is stateless; all persistence is in Power BI (internal tables) or Azure SQL.

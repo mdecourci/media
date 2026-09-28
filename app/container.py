@@ -1,19 +1,20 @@
 # container.py
-
 from injectq import InjectQ
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.config import databaseSettings
-from app.source.file_media_adapter import FileMediaAdapter
-from app.source.base_media_source import BaseMediaSource
+from app.source.media_file_source import MediaFileSource
+from app.source.media_source import MediaSource
+from app.config import mediaSourceSettings
 
 container = InjectQ.get_instance()
 
-engine = create_async_engine(databaseSettings.database_url, echo=False)
+engine = create_async_engine(databaseSettings.connection_string, echo=False)
 session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # Bind values directly — dict-style API
 container[type(engine)] = engine
+
 
 def create_session() -> AsyncSession:
     """Async factory — a new session per resolution."""
@@ -21,17 +22,16 @@ def create_session() -> AsyncSession:
     return session_maker()
 
 
-def create_media_file_source() -> FileMediaAdapter:
-    print("Creating MediaFileSource")
-    return FileMediaAdapter()
+container.bind_factory(AsyncSession, create_session)
+print("Container has  AsyncSession")
+container = InjectQ.get_instance()
 
 
-session = create_session()
-media_file_source = create_media_file_source()
+def create_media_file_source() -> MediaFileSource:
+    return MediaFileSource(folder_path=mediaSourceSettings.file)
 
-container[type(session)] = session
-print("Container has AsyncSession")
-container[type(media_file_source)] = media_file_source
+
+container.bind_factory(MediaFileSource, create_media_file_source)
+container.bind(MediaSource, MediaFileSource)
+
 print("Container has  MediaFileSource")
-
-container.bind(BaseMediaSource, FileMediaAdapter)

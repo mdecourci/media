@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=<your-account>;AccountKey=<your-key>;EndpointSuffix=core.windows.net",
+
+    "AZURE_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=<your-account>;AccountKey=<your-key>;EndpointSuffix=core.windows.net",
+    "RAW_CONTAINER_NAME": "media-raw-store",
+
+    "FEED_CONFIG_JSON": [{\"keyword_set\": \"clean_power_2030\", \"source_name\": \"BBC Energy\", \"feed_url\": \"https://example.com/energy/rss\"}, {\"keyword_set\": \"scottish_power_networks\", \"source_name\": \"Utility Week\", \"feed_url\": \"https://example.com/utility-week/rss\"}]
+  }
+}

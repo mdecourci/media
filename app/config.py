@@ -6,8 +6,6 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_base_config = SettingsConfigDict(env_file=".env", env_ignore_empty=True, extra="ignore", validate_default=False)
-
 ENV_FILE = Path(__file__).resolve().parent.parent / ".env"  # adjust based on config.py's actual location
 
 print(ENV_FILE.exists())
@@ -15,40 +13,63 @@ print(ENV_FILE.exists())
 
 class DatabaseSettings(BaseSettings):
     # Define fields with type hints. Pydantic validates these at runtime.
-    POSTGRES_SERVER: str
-    POSTGRES_PORT: int
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    database_user: str = Field(validation_alias="POSTGRES_USER")
+    database_password: str = Field(validation_alias="POSTGRES_PASSWORD")
+    database_host: str = Field(validation_alias="POSTGRES_HOST")
+    database_port: int = Field(validation_alias="POSTGRES_PORT")
+    database_db: str = Field(validation_alias="POSTGRES_DB")
 
     # Pydantic Settings configuration block
-    model_config = _base_config
+    model_config = SettingsConfigDict(
+        # Looks for a local .env file first, falling back to system env vars
+        env_file=".env",
+        env_file_encoding="utf-8",
+        # Extra fields in the env file that aren't defined above will be ignored safely
+        extra="ignore",
+    )
 
     # config.py
     @property
     def database_url(self) -> str:
         """Dynamically builds the Asyncpg driver connection string for LangChain."""
-        print(self.POSTGRES_SERVER)
-        print(self.POSTGRES_PORT)
-        print(self.POSTGRES_USER)
-        # print(self.POSTGRES_PASSWORD)
-        print(self.POSTGRES_DB)
-        url = f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        print(f"Database URL: {url}")
-        return url
+        return f"postgresql+asyncpg://{self.database_user}:{self.database_password}@{self.database_host}:{self.database_port}/{self.database_db}"
 
 
 class MediaSourceSettings(BaseSettings):
     # Define fields with type hints. Pydantic validates these at runtime.
-    MEDIA_SOURCE: str = Field(validation_alias="MEDIA_SOURCE")
+    media_source: str = Field(validation_alias="MEDIA_SOURCE")
 
     # Pydantic Settings configuration block
-    model_config = _base_config
+    model_config = SettingsConfigDict(
+        # Looks for a local .env file first, falling back to system env vars
+        env_file=".env",
+        env_file_encoding="utf-8",
+        # Extra fields in the env file that aren't defined above will be ignored safely
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     @property
     def file(self) -> Path:
-        return Path(self.MEDIA_SOURCE)
+        return Path(self.media_source)
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=("%(asctime)s | " "%(levelname)s | " "%(name)s | " "%(message)s"),
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+        ],
+        force=True,
+    )
+
+    logging.getLogger("uvicorn").setLevel(logging.DEBUG)
+
+    logging.getLogger("injectq").setLevel(logging.DEBUG)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+
 
 # Instantiate a single global instance for application-wide imports
-mediaSourceSettings = MediaSourceSettings()  # type: ignore[call-arg]
-databaseSettings = DatabaseSettings()  # type: ignore[call-arg,call-arg]
+databaseSettings = DatabaseSettings()
+mediaSourceSettings = MediaSourceSettings()
