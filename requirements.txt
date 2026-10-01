@@ -29,3 +29,5 @@ urllib3==2.7.0
 azure-ai-projects
 azure-identity
 openai
+
+azure-core
